@@ -52,10 +52,6 @@ while [ -n "$1" ] ; do
 done
 
 if [ $command = 'install' ] ; then
-    if [ ! -d $work_dir ] ; then
-        mkdir $work_dir
-    fi
-
     update_nginx_default=false
     update_php_ini=false
     create_mysql_base=false
@@ -131,9 +127,9 @@ if [ $command = 'install' ] ; then
 
         echo -e " \e[96m+\e[39m create mysql user and base"
 
-        read -e -t $wait_time_question -p $' \e[96m|\e[39m user-login: ' -i "bitrix" mysql_user
-        read -e -t $wait_time_question -p $' \e[96m|\e[39m user-pass: ' -i "qwe123" mysql_pass
-        read -e -t $wait_time_question -p $' \e[96m|\e[39m bitrix-base: ' -i "sitemanager" mysql_base
+        read -e -t $wait_time_question -p $' \e[96m|>\e[39m user-login: ' -i "bitrix" mysql_user
+        read -e -t $wait_time_question -p $' \e[96m|>\e[39m user-pass: ' -i "qwe123" mysql_pass
+        read -e -t $wait_time_question -p $' \e[96m|>\e[39m bitrix-base: ' -i "sitemanager" mysql_base
 
         if [ -z $mysql_user ] ; then
             echo ''
@@ -156,15 +152,21 @@ if [ $command = 'install' ] ; then
     fi
 
     if [ -d "/var/www/html" ] ; then
+        if [ ! -d $work_dir ] ; then
+            mkdir $work_dir
+        fi
+
         if [ ! -f $work_dir/bitrix.tar.gz ] ; then
-            echo -n 'Start download bitrix.tar.gz'
-            wget -O $work_dir/bitrix.tar.gz https://www.1c-bitrix.ru/download/business_encode.tar.gz
+            echo -n 'download bitrix.tar.gz'
+            wget -O $work_dir/bitrix.tar.gz https://www.1c-bitrix.ru/download/files/business_encode.tar.gz > /dev/null 2>&1
             echo -e " - \e[32mdone\e[39m"
         fi
 
-        echo -n 'Unpack bitrix.tar.gz in /var/www/html'
+        echo -n 'unpack bitrix.tar.gz in /var/www/html'
         tar -C /var/www/html/ -xzf $work_dir/bitrix.tar.gz
         echo -e " - \e[32mdone\e[39m"
+
+        rm -r $work_dir
 
         chown -R www-data:www-data /var/www/html
     fi
@@ -190,6 +192,10 @@ elif [ $command = 'delete' ] ; then
         echo -n "delete bitrix file"
         rm -rf /var/www/html/
         echo -e " - \e[32mdone\e[39m"
+    fi
+
+    if [ -d $work_dir ] ; then
+        rm -r $work_dir
     fi
 elif [ $command = 'update' ] ; then
     echo 'update'
