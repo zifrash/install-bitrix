@@ -2,7 +2,7 @@
 
 work_dir='bitrix-install'
 
-command='install'
+command='none'
 wait_time_question=10
 
 function Package {
@@ -44,6 +44,8 @@ function Package {
 
 while [ -n "$1" ] ; do
     case "$1" in
+        -install) command='install' ;;
+        -get_key) command='get_key' ;;
         -delete) command='delete' ;;
         -update) command='update' ;;
     esac
@@ -197,6 +199,21 @@ elif [ $command = 'delete' ] ; then
     if [ -d $work_dir ] ; then
         rm -r $work_dir
     fi
+elif [ $command = 'get_key' ] ; then
+    read -e -t $wait_time_question -p $'bitrix-base: ' -i "sitemanager" mysql_base
+
+    if [ -z $mysql_base ] ; then
+        echo ''
+        mysql_base='sitemanager'
+    fi
+
+    php_key="$(grep -Po "(?<=\")(?!TEMPORARY_CACHE)\w*\d*(?=\")" /var/www/html/bitrix/modules/main/admin/define.php)"
+    mysql_key="$(mysql -N -B -e "use $mysql_base; SELECT VALUE FROM b_option WHERE NAME = 'admin_passwordh';")"
+    bitrix_key="$(grep -Po "(?<=\").*(?=\")" /var/www/html/bitrix/license_key.php)"
+
+    echo -e "\e[34mphp key\e[39m \e[90m(bitrix/modules/main/admin/define.php)\e[39m \e[92m$php_key\e[39m\n\e[34mmysql key\e[39m \e[90m(b_option.admin_passwordh.value)\e[39m \e[92m$mysql_key\e[39m\n\e[34mbitrix key\e[39m \e[90m(bitrix/license_key.php)\e[39m \e[92m$bitrix_key\e[39m"
 elif [ $command = 'update' ] ; then
     echo 'update'
+else
+    echo 'wrong command, choose one of the existing -install -get_key -delete'
 fi
