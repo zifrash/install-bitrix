@@ -5,6 +5,8 @@ work_dir='bitrix-install'
 command='none'
 wait_time_question=10
 
+ip="$(ip a | grep -Po "(?<=inet )\d*\.\d*\.\d*\.\d*(?=\/24)")"
+
 function Package {
     local package_command=$1
     local package_name=$2
@@ -176,6 +178,8 @@ if [ $command = 'install' ] ; then
 
         chown -R www-data:www-data /var/www/html
     fi
+
+    echo -e "\e[32mserver ip\e[39m \e[93m$ip\e[39m"
 elif [ $command = 'delete' ] ; then
     read -e -t $wait_time_question -p "Delete nginx php mysql (yes/no)? " -i "no" package_question
 
@@ -213,7 +217,6 @@ elif [ $command = 'get_key' ] ; then
         mysql_base='sitemanager'
     fi
 
-    ip="$(ip a | grep -Po "(?<=inet )\d*\.\d*\.\d*\.\d*(?=\/24)")"
     php_key="$(grep -Po "(?<=\")(?!TEMPORARY_CACHE)\w*\d*(?=\")" /var/www/html/bitrix/modules/main/admin/define.php)"
     mysql_key="$(mysql -N -B -e "use $mysql_base; SELECT VALUE FROM b_option WHERE NAME = 'admin_passwordh';")"
     bitrix_key="$(grep -Po "(?<=\").*(?=\")" /var/www/html/bitrix/license_key.php)"
