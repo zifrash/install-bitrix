@@ -54,6 +54,8 @@ while [ -n "$1" ] ; do
 done
 
 if [ $command = 'install' ] ; then
+    apt update > /dev/null 2>&1
+
     update_nginx_default=false
     update_php_ini=false
     create_mysql_base=false
@@ -130,18 +132,20 @@ if [ $command = 'install' ] ; then
         echo -e " \e[96m+\e[39m create mysql user and base"
 
         read -e -t $wait_time_question -p $' \e[96m|>\e[39m user-login: ' -i "bitrix" mysql_user
-        read -e -t $wait_time_question -p $' \e[96m|>\e[39m user-pass: ' -i "qwe123" mysql_pass
-        read -e -t $wait_time_question -p $' \e[96m|>\e[39m bitrix-base: ' -i "sitemanager" mysql_base
 
         if [ -z $mysql_user ] ; then
             echo ''
             mysql_user='bitrix'
         fi
 
+        read -e -t $wait_time_question -p $' \e[96m|>\e[39m user-pass: ' -i "qwe123" mysql_pass
+
         if [ -z $mysql_pass ] ; then
             echo ''
             mysql_pass='qwe123'
         fi
+
+        read -e -t $wait_time_question -p $' \e[96m|>\e[39m bitrix-base: ' -i "sitemanager" mysql_base
 
         if [ -z $mysql_base ] ; then
             echo ''
@@ -181,6 +185,8 @@ elif [ $command = 'delete' ] ; then
     fi
 
     if [ $package_question = 'yes' ] ; then
+        apt update > /dev/null 2>&1
+
         Package delete nginx
         Package delete php
         Package delete mysql
@@ -207,11 +213,12 @@ elif [ $command = 'get_key' ] ; then
         mysql_base='sitemanager'
     fi
 
+    ip="$(ip a | grep -Po "(?<=inet )\d*\.\d*\.\d*\.\d*(?=\/24)")"
     php_key="$(grep -Po "(?<=\")(?!TEMPORARY_CACHE)\w*\d*(?=\")" /var/www/html/bitrix/modules/main/admin/define.php)"
     mysql_key="$(mysql -N -B -e "use $mysql_base; SELECT VALUE FROM b_option WHERE NAME = 'admin_passwordh';")"
     bitrix_key="$(grep -Po "(?<=\").*(?=\")" /var/www/html/bitrix/license_key.php)"
 
-    echo -e "\e[34mphp key\e[39m \e[90m(bitrix/modules/main/admin/define.php)\e[39m \e[92m$php_key\e[39m\n\e[34mmysql key\e[39m \e[90m(b_option.admin_passwordh.value)\e[39m \e[92m$mysql_key\e[39m\n\e[34mbitrix key\e[39m \e[90m(bitrix/license_key.php)\e[39m \e[92m$bitrix_key\e[39m"
+    echo -e "\e[32mserver ip\e[39m \e[93m$ip\e[39m\n\e[34mphp key\e[39m \e[90m(bitrix/modules/main/admin/define.php)\e[39m \e[92m$php_key\e[39m\n\e[34mmysql key\e[39m \e[90m(b_option.admin_passwordh.value)\e[39m \e[92m$mysql_key\e[39m\n\e[34mbitrix key\e[39m \e[90m(bitrix/license_key.php)\e[39m \e[92m$bitrix_key\e[39m"
 elif [ $command = 'update' ] ; then
     echo 'update'
 else
