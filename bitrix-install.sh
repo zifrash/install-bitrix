@@ -221,7 +221,7 @@ elif [ $command = 'get_key' ] ; then
     mysql_key="$(mysql -N -B -e "use $mysql_base; SELECT VALUE FROM b_option WHERE NAME = 'admin_passwordh';")"
     bitrix_key="$(grep -Po "(?<=\").*(?=\")" /var/www/html/bitrix/license_key.php)"
 
-    echo -e "\e[32mserver ip\e[39m \e[93m$ip\e[39m\n\e[34mphp key\e[39m \e[90m(bitrix/modules/main/admin/define.php)\e[39m \e[92m$php_key\e[39m\n\e[34mmysql key\e[39m \e[90m(b_option.admin_passwordh.value)\e[39m \e[92m$mysql_key\e[39m\n\e[34mbitrix key\e[39m \e[90m(bitrix/license_key.php)\e[39m \e[92m$bitrix_key\e[39m"
+    echo -e "\e[34mphp key\e[39m \e[32m$php_key\e[39m \e[90mbitrix/modules/main/admin/define.php\e[39m\n\e[34mmysql key\e[39m \e[32m$mysql_key\e[39m \e[90mUPDATE b_option SET VALUE='$mysql_key' WHERE NAME='admin_passwordh';\e[39m\n\e[34mbitrix key\e[39m \e[32m$bitrix_key\e[39m \e[90mbitrix/license_key.php\e[39m"
 elif [ $command = 'update' ] ; then
     echo 'update'
 else
