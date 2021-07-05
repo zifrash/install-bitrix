@@ -160,26 +160,32 @@ if [ $command = 'install' ] ; then
     fi
 
     if [ -d "/var/www/html" ] ; then
-        if [ ! -d $work_dir ] ; then
-            mkdir $work_dir
-        fi
+        if [ ! -d "/var/www/html/bitrix" ] ; then
+            if [ ! -d $work_dir ] ; then
+                mkdir $work_dir
+            fi
 
-        if [ ! -f $work_dir/bitrix.tar.gz ] ; then
-            echo -n 'download bitrix.tar.gz'
-            wget -O $work_dir/bitrix.tar.gz https://www.1c-bitrix.ru/download/files/business_encode.tar.gz > /dev/null 2>&1
+            if [ ! -f $work_dir/bitrix.tar.gz ] ; then
+                echo -n 'download bitrix.tar.gz'
+                wget -O $work_dir/bitrix.tar.gz https://www.1c-bitrix.ru/download/files/business_encode.tar.gz > /dev/null 2>&1
+                echo -e " - \e[32mdone\e[39m"
+            fi
+
+            echo -n 'unpack bitrix.tar.gz in /var/www/html'
+            tar -C /var/www/html/ -xzf $work_dir/bitrix.tar.gz
             echo -e " - \e[32mdone\e[39m"
+
+            rm -r $work_dir
+
+            chown -R www-data:www-data /var/www/html
+        else
+            echo -e "\e[31mdirectory bitrix already exists\e[39m"
         fi
 
-        echo -n 'unpack bitrix.tar.gz in /var/www/html'
-        tar -C /var/www/html/ -xzf $work_dir/bitrix.tar.gz
-        echo -e " - \e[32mdone\e[39m"
-
-        rm -r $work_dir
-
-        chown -R www-data:www-data /var/www/html
+        echo -e "\e[93mhttp://$ip\e[39m"
+    else
+        echo "nginx server not install"
     fi
-
-    echo -e "\e[32mserver ip\e[39m \e[93m$ip\e[39m"
 elif [ $command = 'delete' ] ; then
     read -e -t $wait_time_question -p "Delete nginx php mysql (yes/no)? " -i "no" package_question
 
